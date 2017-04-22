@@ -1,0 +1,24 @@
+{
+  "name": "swagio-backend-ws",
+  "version": "1.0.0",
+  "description": "Serial to websocket backend for swagio",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asmundstavdahl/swagio-backend-ws.git"
+  },
+  "author": "Åsmund Stavdahl <smund3@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/asmundstavdahl/swagio-backend-ws/issues"
+  },
+  "homepage": "https://github.com/asmundstavdahl/swagio-backend-ws#readme",
+  "dependencies": {
+    "optimist": "^0.6.1",
+    "serialport": "^4.0.7",
+    "ws": "^2.3.1"
+  }
+}
