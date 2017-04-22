@@ -18,26 +18,52 @@
       width: 100%;
       height: 100%;
     }
+
+    #disconnectedMessage {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 400px;
+      margin-left: -200px;
+      margin-top: -200px;
+      padding: 24px;
+      box-shadow: 0 0 0 5000px rgba(0, 0, 0, 0.4);
+    }
+
+    .display {
+      font-weight: bold;
+    }
   </style>
 </head>
 
 <body>
   <canvas id="barChart"></canvas>
+
+  <div id="disconnectedMessage">
+    <h2>No connection</h2>
+    <p>We don't have a WebSocket connection to the swagio intermediary.</p>
+    <p>Please double-check that
+      <ul>
+        <li>the swagio intermediary is running on <span class="host-display display"></span></li>
+        <li>the swagio intermediary also is configured to run on port <span class="port-display display"></span></li>
+    </p>
+  </div>
+
   <script>
-    var data = {
-      labels: [],
-      datasets: [{
-        label: 'Pin value ([0.0-1.0])',
-        data: [],
-        borderWidth: 1,
-        backgroundColor: "rgba(75,192,192,0.4)",
-        borderColor: "rgba(75,192,192,1)"
-      }]
-    }
+    Chart.defaults.global.animation.duration = 250
+
     var ctx = document.getElementById("barChart")
     var barChart = new Chart(ctx, {
       type: 'bar',
-      data: data,
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Pin value ([0.0-1.0])',
+          data: [],
+          borderWidth: 1,
+        }]
+      },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -52,21 +78,92 @@
       }
     })
 
-    var ws = new WebSocket("ws://localhost:53491")
-    ws.onmessage = function(event) {
-      let pinData = JSON.parse(event.data)
+    /**
+     * TODO: make port (and maybe host) configurable
+     */
+    var host = "localhost"
+    var port = 53491
+
+    /**
+     * This will have our WebSocket
+     * @type {WebSocket}
+     * @see connectionDoctor
+     */
+    window.ws = null
+
+    var disconnectedMessage = document.getElementById("disconnectedMessage")
+    var doctorIntervalMs = 500
+    setInterval(connectionDoctor, doctorIntervalMs)
+
+    /**
+     * Update our chart when we receive a message
+     * @param  {MessageEvent} message
+     */
+    function onWsMessage(message) {
+      let pinData = JSON.parse(message.data)
       let pinNames = Object.keys(pinData)
       let pinValues = Object.values(pinData)
 
+      /**
+       * Update chart labels and data pints
+       */
       barChart.config.data.labels = pinNames
       barChart.config.data.datasets[0].data = pinValues
 
+      /**
+       * Colorize each of the bars according to the kind of pin it represents
+       */
       barChart.config.data.datasets[0].backgroundColor =
         pinNames.map(pin => (pin.charAt(0) == "D") ? 'rgba(127, 50, 67, 0.2)' : 'rgba(50, 67, 127, 0.2)')
       barChart.config.data.datasets[0].borderColor =
         pinNames.map(pin => (pin.charAt(0) == "D") ? 'rgba(127, 50, 67, 0.2)' : 'rgba(50, 67, 127, 0.2)')
 
+      /**
+       * This one's important; here we trigger a re-render of our chart
+       */
       barChart.update()
+    }
+
+    /**
+     * Called periodically to monitor the WebSocket's health
+     */
+    function connectionDoctor() {
+      if (!ws || ws.readyState != WebSocket.OPEN) {
+        /**
+         * Try to connect to the intermediary
+         * @type {WebSocket}
+         */
+        ws = new WebSocket("ws://" + host + ":" + port)
+        /**
+         * Make sure the right message handler is on
+         * @see onWsMessage
+         */
+        ws.onmessage = onWsMessage
+      }
+      /**
+       * Do a short delay here to give ws some time to establish its connection
+       * before be show the disconnected message
+       */
+      setTimeout(function() {
+        if (ws.readyState != WebSocket.OPEN) {
+          /**
+           * Update the message to reflect our host/port settings
+           */
+          let hostDisplays = document.getElementsByClassName("host-display")
+          hostDisplays[0].innerText = host
+          let portDisplays = document.getElementsByClassName("port-display")
+          portDisplays[0].innerText = port
+          /**
+           * Show the disconnected message
+           */
+          disconnectedMessage.style.display = "block"
+        } else {
+          /**
+           * All is good; hide the disconnected message
+           */
+          disconnectedMessage.style.display = "none"
+        }
+      }, doctorIntervalMs / 2)
     }
   </script>
 </body>
