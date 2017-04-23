@@ -64,5 +64,5 @@ void loop() {
                 )
                 .c_str()
                 );
-        delay(10);
+        delay(50);
 }
