@@ -16,4 +16,7 @@ For now the only front end is a browser based one that presents a lively bar cha
 1) `git clone https://github.com/asmundstavdahl/swagio.git`
 2) Flash the Arduino firmware. Open `arduino/arduino.ino` in the Arduino IDE and upload it
 3) Open the front end. Open `frontend/index.html` in your browser
-4) Start the serial-to-websocket intermediary. `cd swagio/intermetiary && node main.js -s /dev/tty/USB*`
+4) Start the serial-to-websocket intermediary.
+  - `cd swagio/intermetiary`
+  - `npm install`
+  - `node main.js -s /dev/ttyUSB*`
