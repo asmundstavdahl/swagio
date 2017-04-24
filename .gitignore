@@ -1,3 +1,9 @@
+### Arduino ###
+*.eep
+*.elf
+*.hex
+
+
 
 # Created by https://www.gitignore.io/api/c,c++,node
 
