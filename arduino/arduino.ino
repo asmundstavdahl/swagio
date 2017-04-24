@@ -1,22 +1,27 @@
 
+#define V_VCC 5.0
+#define BAUD_RATE 115200
+#define ADC_RESOLUTION (1<<10)
+
+
 #define THE_END -1
 
 /**
  * Digital pins to use as inputs
  */
 int dPinsIn[] = {
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
+//        2,
+//        3,
+//        4,
+//        5,
+//        6,
+//        7,
+//        8,
+//        9,
+//        10,
+//        11,
+//        12,
+//        13,
         THE_END
 };
 
@@ -26,13 +31,13 @@ int dPinsIn[] = {
  */
 int aPins[] = {
         0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
+//        1,
+//        2,
+//        3,
+//        4,
+//        5,
+//        6,
+//        7,
         THE_END
 };
 
@@ -40,7 +45,7 @@ void setup() {
         for(int i = 0; dPinsIn[i] != THE_END; i++) {
                 pinMode(dPinsIn[i], INPUT);
         }
-        Serial.begin(115200);
+        Serial.begin(BAUD_RATE);
 }
 
 void loop() {
@@ -55,7 +60,7 @@ void loop() {
                 int pin = aPins[i];
                 dataString = dataString
                              + "\"" + "A" + pin + "\": "
-                             + String(analogRead(pin) / 1023.0) + ", ";
+                             + String(V_VCC * analogRead(pin) / ADC_RESOLUTION) + ", ";
         }
 
         Serial.write(
@@ -64,5 +69,5 @@ void loop() {
                 )
                 .c_str()
                 );
-        delay(50);
+        delay(1);
 }
